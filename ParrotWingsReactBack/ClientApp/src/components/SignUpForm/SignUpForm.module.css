@@ -1,0 +1,7 @@
+.formGrid {
+  height: 100vh;
+}
+
+.formGridColumn {
+  max-width: 450px;
+}
