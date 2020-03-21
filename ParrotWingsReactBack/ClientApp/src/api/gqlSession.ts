@@ -10,8 +10,8 @@ export const GET_SESSION_INFO = gql`
 `;
 
 export const LOGIN = gql`
-  mutation Login($loginOptions: LoginOptionsInput) {
-    sessionInfo(loginOptions: $loginOptions) {
+  mutation Login($loginOptions: LoginOptionsInput!) {
+    login(loginOptions: $loginOptions) {
       userName
       balance
     }
@@ -19,8 +19,8 @@ export const LOGIN = gql`
 `;
 
 export const SIGNUP = gql`
-  mutation SignUp($signUpOptions: SignUpOptionsInput) {
-    sessionInfo(signUpOptions: $signUpOptions) {
+  mutation SignUp($signUpOptions: SignUpOptionsInput!) {
+    signUp(signUpOptions: $signUpOptions) {
       userName
       balance
     }
@@ -30,7 +30,7 @@ export const SIGNUP = gql`
 export const LOGOUT = gql`
   mutation Logout {
     logout {
-      id
+      userName
     }
   }
 `;

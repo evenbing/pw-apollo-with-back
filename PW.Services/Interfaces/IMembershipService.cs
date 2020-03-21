@@ -10,8 +10,8 @@ namespace PW.Services.Interfaces
 {
     public interface IMembershipService
     {
-        ClaimsPrincipal GetUserClaimsPrincipal(UserDto user);
-        Task<UserDto> CreateUserAsync(SignUpDto signUpDto);
-        Task<UserDto> GetUserAsync(LoginDto loginDto);
+        ClaimsPrincipal GetUserClaimsPrincipal(PwUser user);
+        Task<PwUser> CreateUserAsync(SignUpDto signUpDto);
+        Task<PwUser> GetUserAsync(LoginDto loginDto);
     }
 }

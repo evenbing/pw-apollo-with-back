@@ -13,6 +13,7 @@ namespace PW.Web.GraphQL
             : base(resolver)
         {
             Query = resolver.Resolve<PwQuery>();
+            Mutation = resolver.Resolve<PwMutation>();
         }
     }
 }

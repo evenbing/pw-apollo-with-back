@@ -33,12 +33,12 @@ namespace PW.Services
             _mapper = mapper;
         }
 
-        public ClaimsPrincipal GetUserClaimsPrincipal(UserDto userDto)
+        public ClaimsPrincipal GetUserClaimsPrincipal(PwUser user)
         {
             ClaimsPrincipal claimsPrincipal = null;
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.Name, userDto.Email)
+                new Claim(ClaimTypes.Name, user.Email)
             };
 
             var claimsIdentity = new ClaimsIdentity(claims, "Cookies");
@@ -47,18 +47,17 @@ namespace PW.Services
             return claimsPrincipal;
         }
 
-        public async Task<UserDto> GetUserAsync(LoginDto loginDto)
+        public async Task<PwUser> GetUserAsync(LoginDto loginDto)
         {
             var user = await _userRepository.GetByEmailAsync(loginDto.Email);
             if (user == null || !IsUserValid(user, loginDto.Password))
             {
                 throw new PWException(InvalidUsernameOrPasswordMessage);
-            }
-            var result = _mapper.Map<UserDto>(user);
-            return result;
+            }            
+            return user;
         }
 
-        public async Task<UserDto> CreateUserAsync(SignUpDto signUpDto)
+        public async Task<PwUser> CreateUserAsync(SignUpDto signUpDto)
         {
             await CheckUserRegistred(signUpDto);
 
@@ -83,7 +82,7 @@ namespace PW.Services
             };
 
             await _userRepository.AddAsync(user);
-            return _mapper.Map<UserDto>(user);
+            return user;
         }        
 
         private bool IsUserValid(PwUser user, string password)

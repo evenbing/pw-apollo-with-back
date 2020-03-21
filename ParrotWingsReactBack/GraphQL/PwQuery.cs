@@ -13,19 +13,23 @@ namespace PW.Web.GraphQL
     {
         public PwQuery(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository)
         {
+            #region Session
+
             FieldAsync<SessionInfoType>(
-               "sessionInfo",
-               resolve: async context =>
-               {
-                   var email = httpContextAccessor.HttpContext.User.Identity.Name;
-                   var user = await userRepository.GetByEmailAsync(email);
+                   "sessionInfo",
+                   resolve: async context =>
+                   {
+                       var email = httpContextAccessor.HttpContext.User.Identity.Name;
+                       var user = await userRepository.GetByEmailAsync(email);
                    //if (user == null)
                    //{
                    //    return BadRequest(new { errorMessage = CurrentUserNotFoundMessage });
                    //}
                    return user;
-               }
-           );
+                   }
+               ); 
+
+            #endregion
         }
     }
 }

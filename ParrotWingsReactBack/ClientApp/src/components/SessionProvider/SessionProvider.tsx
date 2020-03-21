@@ -35,8 +35,8 @@ export default function SessionProvider({ children }: { children?: ReactNode}) {
   });
 
   const [gqlLogin] = useMutation(LOGIN, { 
-    onCompleted: (data: ISessionInfo) => {
-      setSession(data);
+    onCompleted: ({login: sessionInfo}) => {
+      setSession(sessionInfo);
       setHubConnection(new HubConnectionBuilder()
         .withUrl('/balance')
         .build());
@@ -44,7 +44,7 @@ export default function SessionProvider({ children }: { children?: ReactNode}) {
   });
 
   const [gqlSignup] = useMutation(SIGNUP, { 
-    onCompleted: (data: ISessionInfo) => setSession(data)
+    onCompleted: ({login: sessionInfo}) => setSession(sessionInfo)
   });
 
   const [gqlLogout] = useMutation(LOGOUT, { 
