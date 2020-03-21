@@ -1,9 +1,12 @@
 import React, { useEffect, useState, useContext, ReactNode } from 'react';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { ApolloError } from 'apollo-boost';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 
 import { ApiContext } from '../ApiProvider/ApiProvider';
 import { ISessionInfo, ILoginOptions, ISignUpOptions } from '../../models/backendModels';
 import { toastResponseErrors } from '../../api/api';
+import { GET_SESSION_INFO, LOGIN, LOGOUT, SIGNUP } from '../../api/gqlSession';
 
 export interface ISessionContext {
   session: ISessionInfo | null;
@@ -23,57 +26,54 @@ export const SessionContext = React.createContext<ISessionContext>({
 
 export default function SessionProvider({ children }: { children?: ReactNode}) {
   const api = useContext(ApiContext);
-  const [session, setSession] = useState<ISessionInfo | null>(null);  
   const [hubConnection, setHubConnection] = useState<HubConnection | null>(null);
+  const [session, setSession] = useState<ISessionInfo | null>(null);
+
+  const { refetch: refetchSession } = useQuery(GET_SESSION_INFO, {
+    onCompleted: ({sessionInfo}) => setSession(sessionInfo),
+    onError: () => setSession(null)
+  });
+
+  const [gqlLogin] = useMutation(LOGIN, { 
+    onCompleted: (data: ISessionInfo) => {
+      setSession(data);
+      setHubConnection(new HubConnectionBuilder()
+        .withUrl('/balance')
+        .build());
+    },
+  });
+
+  const [gqlSignup] = useMutation(SIGNUP, { 
+    onCompleted: (data: ISessionInfo) => setSession(data)
+  });
+
+  const [gqlLogout] = useMutation(LOGOUT, { 
+    onCompleted: () => setSession(null),
+    onError: (error: ApolloError) => {
+      setSession(null);
+      // toastResponseErrors(error.message);
+    }
+  }); 
 
   const updateBalance = (data: number) => {
     setSession(session === null ? null : {userName: session.userName, balance : data});
   }
 
-  const refreshSession = () => {
-    fetchSession();
+  const refreshSession = async () => {
+    await refetchSession();
   }
 
-  const login = async (options: ILoginOptions) => {    
-    const data = await api.session.login(options);
-    setSession(data);
-    setHubConnection(new HubConnectionBuilder()
-      .withUrl('/balance')
-      .build());
+  const login = async (loginOptions: ILoginOptions) => {    
+    await gqlLogin({ variables: { loginOptions } });
   };
 
-  const signUp = async (options: ISignUpOptions) => {
-    const data = await api.session.signUp(options);
-    setSession(data);
+  const signUp = async (signUpOptions: ISignUpOptions) => {
+    await gqlSignup({ variables: { signUpOptions } });
   };
 
   const logout = async () => {
-    try {
-      await api.session.logout();
-    } catch (ex) {
-      toastResponseErrors(ex.response?.data);
-    } finally {
-      setSession(null);
-    }
+    await gqlLogout();
   };
-
-  const fetchSession = async () => {
-    try {
-      const data = await api.session.getSessionInfo();
-      setSession(data);
-    } catch {
-      //ignore
-    }
-  };
-
-  useEffect(() => {
-    try {
-        fetchSession();
-    } catch {
-        setSession(null);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   useEffect(() => {
     if (hubConnection) {

@@ -1,4 +1,3 @@
-import axios, { AxiosInstance } from 'axios';
 import { toast } from 'react-toastify';
 
 import SessionApi from './sessionApi';
@@ -37,15 +36,11 @@ export function toastResponseErrors(response: IResponseData) {
 export default class Api {    
   public readonly session: SessionApi;
   public readonly transaction: TransactionsApi;
-  public readonly users: UsersApi;
-  
-  private client: AxiosInstance;
+  public readonly users: UsersApi;  
 
   constructor() {
-    this.client = axios.create();
-
-    this.session = new SessionApi(this.client);
-    this.transaction = new TransactionsApi(this.client);
-    this.users = new UsersApi(this.client);
+    this.session = new SessionApi(null);
+    this.transaction = new TransactionsApi(null);
+    this.users = new UsersApi(null);
   }  
 }

@@ -1,8 +1,12 @@
 using AutoMapper;
+using GraphQL;
+using GraphQL.Server;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.SpaServices.ReactDevelopmentServer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -15,6 +19,7 @@ using PW.Services;
 using PW.Services.Hubs;
 using PW.Services.Interfaces;
 using PW.Services.Mapping;
+using PW.Web.GraphQL;
 
 namespace ParrotWingsReactBack
 {
@@ -30,6 +35,11 @@ namespace ParrotWingsReactBack
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.Configure<KestrelServerOptions>(options =>
+            {
+                options.AllowSynchronousIO = true;
+            });
+            services.AddHttpContextAccessor();
             services.AddAutoMapper(typeof(MappingProfile));
 
             // Repositories
@@ -40,6 +50,12 @@ namespace ParrotWingsReactBack
             services.AddScoped<IMembershipService, MembershipService>();
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<ITransactionService, TransactionService>();
+
+            services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
+            services.AddScoped<PwSchema>();
+                        
+            services.AddGraphQL(o => { o.ExposeExceptions = false; })
+                .AddGraphTypes(ServiceLifetime.Scoped);
 
             services.AddControllers();
 
@@ -76,6 +92,8 @@ namespace ParrotWingsReactBack
             app.UseAuthentication();            
             app.UseRouting();
             app.UseAuthorization();
+
+            app.UseGraphQL<PwSchema>();
 
             app.UseEndpoints(endpoints =>
             {
