@@ -1,12 +1,11 @@
 import React, { useContext, useState, ChangeEvent } from 'react'
 import { Link, Redirect, useHistory, useLocation } from 'react-router-dom'
 import { Button, Form, Grid, Header, Message, Segment } from 'semantic-ui-react'
-import { toast } from 'react-toastify';
 
 import styles from './LoginForm.module.css'
 import { SessionContext,  } from '../SessionProvider/SessionProvider';
 import { NavRoute } from '../MainRouter/MainRouter';
-//import { toastResponseErrors } from '../../graphql/api';
+import { toastResponseErrors } from '../../graphql/utils';
 
 export default function LoginForm() {
   const history = useHistory();
@@ -22,7 +21,7 @@ export default function LoginForm() {
       await login({email, password});
       history.replace(from);
     } catch (ex) {
-      //toastResponseErrors(ex.response?.data);
+      toastResponseErrors(ex);
     }
   }
 

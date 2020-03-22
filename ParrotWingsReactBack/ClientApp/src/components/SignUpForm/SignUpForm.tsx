@@ -5,7 +5,7 @@ import styles from './SignUpForm.module.css'
 import { useHistory } from 'react-router';
 import { SessionContext } from '../SessionProvider/SessionProvider';
 import { NavRoute } from '../MainRouter/MainRouter';
-//import { toastResponseErrors } from '../../graphql/api';
+import { toastResponseErrors } from '../../graphql/utils';
 
 export default function SignUpForm() {
   const history = useHistory();
@@ -20,7 +20,7 @@ export default function SignUpForm() {
       await signUp({email, userName, password, confirmPassword});      
       history.push(NavRoute.Home);
     } catch (ex) {
-      //toastResponseErrors(ex.response?.data);
+      toastResponseErrors(ex);
     }
   }
 

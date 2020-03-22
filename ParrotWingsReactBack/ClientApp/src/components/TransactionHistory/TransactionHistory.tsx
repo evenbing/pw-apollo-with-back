@@ -1,4 +1,4 @@
-import React, { useEffect, useContext, useState } from 'react'
+import React, { useState } from 'react'
 import { Table, Button, Icon } from 'semantic-ui-react'
 import { useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-boost';
@@ -6,7 +6,7 @@ import { ApolloError } from 'apollo-boost';
 import { useHistory } from 'react-router';
 import { NavRoute } from '../MainRouter/MainRouter';
 import { ITransactionInfo } from '../../models/backendModels';
-//import { toastResponseErrors } from '../../graphql/api';
+import { toastResponseErrors } from '../../graphql/utils';
 import { GET_ALL_FOR_CURRENT_USER } from '../../graphql/gqlTransaction';
 
 export default function TransactionHistory() {
@@ -16,7 +16,7 @@ export default function TransactionHistory() {
   useQuery(GET_ALL_FOR_CURRENT_USER, {
     fetchPolicy: 'cache-and-network',
     onCompleted: ({transactionInfos}) => setTransactions(transactionInfos),
-    //onError: () => toastResponseErrors(ex.response?.data);
+    onError: (error: ApolloError) => toastResponseErrors(error)
   });
 
   const handleCopyClick = (transaction: ITransactionInfo) => {

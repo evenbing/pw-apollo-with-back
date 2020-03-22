@@ -6,7 +6,7 @@ import { Form, Button, Dropdown, DropdownProps } from 'semantic-ui-react'
 import { toast } from 'react-toastify';
 
 import { SessionContext } from '../SessionProvider/SessionProvider';
-//import { toastResponseErrors } from '../../graphql/api';
+import { toastResponseErrors } from '../../graphql/utils';
 import { GET_USERNAME_OPTIONS } from '../../graphql/gqlUsers';
 import { NEW_TRANSACTION } from '../../graphql/gqlTransaction';
 import { IUserNameOption } from '../../models/backendModels';
@@ -22,7 +22,7 @@ export default function NewTransaction() {
   useQuery(GET_USERNAME_OPTIONS, {
     fetchPolicy: 'cache-and-network',
     onCompleted: ({userNameOptions}) => setRecipientOptions(userNameOptions.map((x: IUserNameOption) => x.userName)),
-    //onError: () => toastResponseErrors(ex.response?.data);
+    onError: (error: ApolloError) => toastResponseErrors(error)
   });
 
   const [createTransaction] = useMutation(NEW_TRANSACTION, { 
@@ -30,7 +30,7 @@ export default function NewTransaction() {
       await refreshSession();
       toast.success('Transaction remited');
     },
-    //onError: () => toastResponseErrors(ex.response?.data);
+    onError: (error: ApolloError) => toastResponseErrors(error)
   });
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {

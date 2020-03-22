@@ -4,7 +4,7 @@ import { ApolloError } from 'apollo-boost';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 
 import { ISessionInfo, ILoginOptions, ISignUpOptions } from '../../models/backendModels';
-//import { toastResponseErrors } from '../../graphql/api';
+import { toastResponseErrors } from '../../graphql/utils';
 import { GET_SESSION_INFO, LOGIN, LOGOUT, SIGNUP } from '../../graphql/gqlSession';
 
 export interface ISessionContext {
@@ -43,17 +43,23 @@ export default function SessionProvider({ children }: { children?: ReactNode}) {
         .withUrl('/balance')
         .build());
     },
+    onError: (error: ApolloError) => {
+      throw error;
+    }
   });
 
   const [gqlSignup] = useMutation(SIGNUP, { 
-    onCompleted: ({signUp: sessionInfo}) => setSession(sessionInfo)
+    onCompleted: ({signUp: sessionInfo}) => setSession(sessionInfo),
+    onError: (error: ApolloError) => {
+      throw error;
+    }
   });
 
   const [gqlLogout] = useMutation(LOGOUT, { 
     onCompleted: () => setSession(null),
     onError: (error: ApolloError) => {
       setSession(null);
-      // toastResponseErrors(error.message);
+      toastResponseErrors(error);
     }
   }); 
 
