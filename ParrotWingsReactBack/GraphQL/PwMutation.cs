@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Http;
+using PW.DataTransferObjects.Transactions;
 using PW.DataTransferObjects.Users;
 using PW.Entities;
 using PW.Services.Exceptions;
@@ -17,7 +18,7 @@ namespace PW.Web.GraphQL
 {    
     public class PwMutation : ObjectGraphType
     {
-        public PwMutation(IHttpContextAccessor httpContextAccessor, IMembershipService membershipService)
+        public PwMutation(IHttpContextAccessor httpContextAccessor, IMembershipService membershipService, ITransactionService transactionService)
         {
             #region Session
 
@@ -39,7 +40,7 @@ namespace PW.Web.GraphQL
                         {
                             var a = 0;
                         // return BadRequest(new { errorMessage = ex.Message });
-                    }
+                        }
 
                         await httpContextAccessor.HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
                         return user;
@@ -84,11 +85,38 @@ namespace PW.Web.GraphQL
                    await httpContextAccessor.HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
                    return null;
                }
-           ); 
+           );
 
             #endregion
 
+            #region Transactions
 
+            FieldAsync<ListGraphType<TransactionType>>(
+                           "createTransaction",
+                           arguments: new QueryArguments(new QueryArgument<NonNullGraphType<NewTransactionInput>> { Name = "newTransaction" }),
+                           resolve: async context =>
+                           {
+                               var createTransactionDto = context.GetArgument<CreateTransactionDto>("newTransaction");
+                           //if (!ModelState.IsValid)
+                           //{
+                           //    return BadRequest(ModelState);
+                           //}
+
+                           var payeeEmail = httpContextAccessor.HttpContext.User.Identity.Name;
+                               try
+                               {
+                                   await transactionService.CreateTransactionAsync(payeeEmail, createTransactionDto);
+                               }
+                               catch (PWException ex)
+                               {
+                                   var a = 0;
+                               //return BadRequest(new { errorMessage = ex.Message });
+                           }
+                               return null;
+                           }
+                       ); 
+
+            #endregion
         }
     }
 }

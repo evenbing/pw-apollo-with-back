@@ -1,11 +1,16 @@
 import React, { useState, ChangeEvent, useContext, useEffect, SyntheticEvent } from 'react'
 import { useLocation } from 'react-router-dom';
+import { useQuery, useMutation } from '@apollo/react-hooks';
+import { ApolloError } from 'apollo-boost';
 import { Form, Button, Dropdown, DropdownProps } from 'semantic-ui-react'
 import { toast } from 'react-toastify';
 
 import { ApiContext } from '../ApiProvider/ApiProvider';
 import { SessionContext } from '../SessionProvider/SessionProvider';
 import { toastResponseErrors } from '../../api/api';
+import { GET_USERNAME_OPTIONS } from '../../api/gqlUsers';
+import { NEW_TRANSACTION } from '../../api/gqlTransaction';
+import { IUserNameOption } from '../../models/backendModels';
 
 export default function NewTransaction() {
   const api = useContext(ApiContext);
@@ -16,34 +21,24 @@ export default function NewTransaction() {
   const [amount, setAmount] = useState(queryAmount);
   const [recipientOptions, setRecipientOptions] = useState(new Array<string>());
 
-  const fetchRecipientOptions = async () => {
-    try {
-      const result = await api.users.getUsernameOptions();
-      setRecipientOptions(result);
-    } catch (ex) {
-      toastResponseErrors(ex.response?.data);
-    }
-  }
+  useQuery(GET_USERNAME_OPTIONS, {
+    fetchPolicy: 'cache-and-network',
+    onCompleted: ({userNameOptions}) => setRecipientOptions(userNameOptions.map((x: IUserNameOption) => x.userName)),
+    //onError: () => toastResponseErrors(ex.response?.data);
+  });
 
-  useEffect(() => {
-    fetchRecipientOptions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []) 
+  const [createTransaction] = useMutation(NEW_TRANSACTION, { 
+    onCompleted: async () => {
+      await refreshSession();
+      toast.success('Transaction remited');
+    },
+    //onError: () => toastResponseErrors(ex.response?.data);
+  });
 
   const handleAmountChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = Number.parseInt(e.target.value);
     if (!Number.isNaN(value)) {
       setAmount(value);
-    }
-  }
-
-  const handleSubmitClick = async () => {
-    try {
-      await api.transaction.newTransaction({recipient: recipient, amount: amount})
-      await refreshSession();
-      toast.success('Transaction remited')
-    } catch (ex) {
-      toastResponseErrors(ex.response?.data);
     }
   }
 
@@ -72,7 +67,7 @@ export default function NewTransaction() {
           onChange={handleAmountChange}
         />
       </Form.Field>
-      <Button primary type='submit' onClick={handleSubmitClick}>Submit</Button>
+      <Button primary type='submit' onClick={() => createTransaction({ variables: { newTransaction: {recipient, amount} } })}>Submit</Button>
     </Form>
   )
 }

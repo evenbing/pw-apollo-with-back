@@ -28,35 +28,35 @@ namespace PW.Web.Controllers
             _mapper = mapper;
         }
                 
-        [HttpGet]
-        public async Task<ActionResult<TransactionDto>> GetAllForCurrentUser()
-        {
-            var email = HttpContext.User.Identity.Name;
-            var transactions = await _transactionService.GetTransactionsOrderedByDateAsync(email);
-            var result = transactions.Select(x => _mapper.Map<TransactionDto>(x));
+        //[HttpGet]
+        //public async Task<ActionResult<TransactionDto>> GetAllForCurrentUser()
+        //{
+        //    var email = HttpContext.User.Identity.Name;
+        //    var transactions = await _transactionService.GetTransactionsOrderedByDateAsync(email);
+        //    var result = transactions.Select(x => _mapper.Map<TransactionDto>(x));
 
-            return Ok(result);
-        }
+        //    return Ok(result);
+        //}
                         
-        [HttpPost]
-        public async Task<ActionResult> Create([FromBody]CreateTransactionDto createTransactionDto)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+        //[HttpPost]
+        //public async Task<ActionResult> Create([FromBody]CreateTransactionDto createTransactionDto)
+        //{
+        //    if (!ModelState.IsValid)
+        //    {
+        //        return BadRequest(ModelState);
+        //    }
 
-            var payeeEmail = HttpContext.User.Identity.Name;            
-            try
-            {
-                await _transactionService.CreateTransactionAsync(payeeEmail, createTransactionDto);
-            }
-            catch (PWException ex)
-            {
-                return BadRequest(new { errorMessage = ex.Message });
-            }           
+        //    var payeeEmail = HttpContext.User.Identity.Name;            
+        //    try
+        //    {
+        //        await _transactionService.CreateTransactionAsync(payeeEmail, createTransactionDto);
+        //    }
+        //    catch (PWException ex)
+        //    {
+        //        return BadRequest(new { errorMessage = ex.Message });
+        //    }           
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
     }
 }

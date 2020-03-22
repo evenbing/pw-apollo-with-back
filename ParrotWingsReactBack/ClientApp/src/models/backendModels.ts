@@ -27,10 +27,6 @@ export interface ISignUpOptions {
   confirmPassword: string;
 }
 
-export interface IUserInfo {
-  email: string;
-  userName: string;
-  password: string;
-  balance: number;
+export interface IUserNameOption {
+  userName: string;  
 }
-

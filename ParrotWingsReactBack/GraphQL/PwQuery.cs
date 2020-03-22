@@ -1,6 +1,8 @@
 ﻿using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
 using PW.DataAccess.Interfaces;
+using PW.Services.Exceptions;
+using PW.Services.Interfaces;
 using PW.Web.GraphQL.Types;
 using System;
 using System.Collections.Generic;
@@ -11,7 +13,7 @@ namespace PW.Web.GraphQL
 {    
     public class PwQuery : ObjectGraphType
     {
-        public PwQuery(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository)
+        public PwQuery(IHttpContextAccessor httpContextAccessor, IUserRepository userRepository, ITransactionService transactionService)
         {
             #region Session
 
@@ -27,7 +29,35 @@ namespace PW.Web.GraphQL
                    //}
                    return user;
                    }
-               ); 
+               );
+
+            #endregion
+
+            #region Users
+
+            FieldAsync<ListGraphType<UserNameOptionType>>(
+                       "userNameOptions",
+                       resolve: async context =>
+                       {
+                           var email = httpContextAccessor.HttpContext.User.Identity.Name;
+                           var users = await userRepository.FindByAsync(x => x.Email != email);
+                           return users;
+                       }
+                   );
+
+            #endregion
+
+            #region Transactions
+
+            FieldAsync<ListGraphType<TransactionType>>(
+                           "transactionInfos",
+                           resolve: async context =>
+                           {
+                               var email = httpContextAccessor.HttpContext.User.Identity.Name;
+                               var transactions = await transactionService.GetTransactionsOrderedByDateAsync(email);
+                               return transactions;
+                           }
+                       ); 
 
             #endregion
         }

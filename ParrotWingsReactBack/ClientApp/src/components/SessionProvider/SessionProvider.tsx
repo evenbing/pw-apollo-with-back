@@ -10,7 +10,7 @@ import { GET_SESSION_INFO, LOGIN, LOGOUT, SIGNUP } from '../../api/gqlSession';
 
 export interface ISessionContext {
   session: ISessionInfo | null;
-  refreshSession: () => void;
+  refreshSession: () => Promise<void>;
   login: (creds: ILoginOptions) => Promise<void>;
   signUp: (creds: ISignUpOptions) => Promise<void>;
   logout: () => Promise<void>;
@@ -18,7 +18,7 @@ export interface ISessionContext {
 
 export const SessionContext = React.createContext<ISessionContext>({
   session: null,
-  refreshSession: () => {},
+  refreshSession: () => Promise.reject(),
   login: () => Promise.reject(),
   signUp: () => Promise.reject(),
   logout: () => Promise.reject(),
@@ -30,7 +30,11 @@ export default function SessionProvider({ children }: { children?: ReactNode}) {
   const [session, setSession] = useState<ISessionInfo | null>(null);
 
   const { refetch: refetchSession } = useQuery(GET_SESSION_INFO, {
-    onCompleted: ({sessionInfo}) => setSession(sessionInfo),
+    fetchPolicy: 'network-only',
+    notifyOnNetworkStatusChange: true,
+    onCompleted: ({sessionInfo}) => {
+      setSession(sessionInfo)
+    },
     onError: () => setSession(null)
   });
 
@@ -44,7 +48,7 @@ export default function SessionProvider({ children }: { children?: ReactNode}) {
   });
 
   const [gqlSignup] = useMutation(SIGNUP, { 
-    onCompleted: ({login: sessionInfo}) => setSession(sessionInfo)
+    onCompleted: ({signUp: sessionInfo}) => setSession(sessionInfo)
   });
 
   const [gqlLogout] = useMutation(LOGOUT, { 

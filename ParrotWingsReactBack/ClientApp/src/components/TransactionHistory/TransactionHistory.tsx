@@ -1,30 +1,25 @@
 import React, { useEffect, useContext, useState } from 'react'
 import { Table, Button, Icon } from 'semantic-ui-react'
+import { useQuery } from '@apollo/react-hooks';
+import { ApolloError } from 'apollo-boost';
 
 import { ApiContext } from '../ApiProvider/ApiProvider'
 import { useHistory } from 'react-router';
 import { NavRoute } from '../MainRouter/MainRouter';
 import { ITransactionInfo } from '../../models/backendModels';
 import { toastResponseErrors } from '../../api/api';
+import { GET_ALL_FOR_CURRENT_USER } from '../../api/gqlTransaction';
 
 export default function TransactionHistory() {
   const history = useHistory();    
   const [ transactions, setTransactions ] = useState(new Array<ITransactionInfo>());
   const api = useContext(ApiContext);
 
-  const fetchTransactions = async () => {
-    try {
-      const data = await api.transaction.getTransactions();
-      setTransactions(data);
-    } catch (ex) {
-      toastResponseErrors(ex.response?.data);
-    }
-  }
-
-  useEffect(() => {
-    fetchTransactions(); 
-    // eslint-disable-next-line react-hooks/exhaustive-deps       
-  }, [])
+  useQuery(GET_ALL_FOR_CURRENT_USER, {
+    fetchPolicy: 'cache-and-network',
+    onCompleted: ({transactionInfos}) => setTransactions(transactionInfos),
+    //onError: () => toastResponseErrors(ex.response?.data);
+  });
 
   const handleCopyClick = (transaction: ITransactionInfo) => {
     const absAmount = Math.abs(transaction.amount);    

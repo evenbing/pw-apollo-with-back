@@ -21,14 +21,14 @@ namespace PW.Web.Controllers
         {
             _userRepository = userRepository;            
         }
-                
-        [HttpGet]
-        public async Task<ActionResult<UserDto>> GetUsernameOptions()
-        {
-            var email = HttpContext.User.Identity.Name;
-            var users = await _userRepository.FindByAsync(x => x.Email != email);
-            var result = users.Select(u => u.UserName);
-            return Ok(result);
-        }
+
+        //[HttpGet]
+        //public async Task<ActionResult<UserDto>> GetUsernameOptions()
+        //{
+        //    var email = HttpContext.User.Identity.Name;
+        //    var users = await _userRepository.FindByAsync(x => x.Email != email);
+        //    var result = users.Select(u => u.UserName);
+        //    return Ok(result);
+        //}
     }
 }
