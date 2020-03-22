@@ -19,10 +19,10 @@ namespace PW.DataAccess.Repositories
         public async Task<IEnumerable<PwTransaction>> GetByEmailAsync(string email, int offset, int limit)
         {
             IQueryable<PwTransaction> query = _dbContext.Transactions;
-            query = query.Where(t => t.Payee.Email == email || t.Recipient.Email == email);
-            query = query.Skip(offset).Take(limit);
             query = query.Include(t => t.Payee).Include(t => t.Recipient);
+            query = query.Where(t => t.Payee.Email == email || t.Recipient.Email == email);
             query = query.OrderByDescending(t => t.TransactionDateTime);
+            query = query.Skip(offset).Take(limit);                        
             return await query.ToListAsync();
         }
 

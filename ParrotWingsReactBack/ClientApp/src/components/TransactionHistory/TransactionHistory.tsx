@@ -3,6 +3,7 @@ import { Table, Button, Icon, Pagination } from 'semantic-ui-react'
 import { useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-boost';
 
+import styles from './TransactionHistory.module.css'
 import { useHistory } from 'react-router';
 import { NavRoute } from '../MainRouter/MainRouter';
 import { ITransactionInfo } from '../../models/backendModels';
@@ -53,13 +54,13 @@ export default function TransactionHistory() {
         <Table.HeaderCell>Correspondent name</Table.HeaderCell>
         <Table.HeaderCell>Amount</Table.HeaderCell>
         <Table.HeaderCell>Balance</Table.HeaderCell>
-        <Table.HeaderCell />
+        <Table.HeaderCell className={styles.buttonColumn}/>
       </Table.Row>
       </Table.Header>
       
       <Table.Body>
       {transactions.map((transaction: ITransactionInfo) => 
-        <Table.Row style={{minHeight: '61px'}} key={`${transaction.date}_${transaction.resultBalance}`}>
+        <Table.Row className={styles.buttonRow} key={`${transaction.date}_${transaction.resultBalance}`}>
           <Table.Cell>{transaction.date}</Table.Cell>
           <Table.Cell>{transaction.correspondentName}</Table.Cell>
           <Table.Cell>{transaction.amount}</Table.Cell>
@@ -76,7 +77,7 @@ export default function TransactionHistory() {
       </Table.Body>
 
       <Table.Footer>
-        <Table.Row>
+        <Table.Row textAlign='center'>
           <Table.HeaderCell colSpan="8">
             <Pagination
               totalPages={totalPages}
