@@ -18,6 +18,7 @@ using PW.Services;
 using PW.Services.Hubs;
 using PW.Services.Interfaces;
 using PW.Web.GraphQL;
+using PW.Web.GraphQL.Executer;
 
 namespace ParrotWingsReactBack
 {
@@ -51,6 +52,7 @@ namespace ParrotWingsReactBack
             // GraphQL
             services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
             services.AddScoped<PwSchema>();                        
+            services.AddSingleton<IDocumentExecuter, EfDocumentExecuter>();
             services.AddGraphQL(o => { o.ExposeExceptions = false; })
                 .AddGraphTypes(ServiceLifetime.Scoped);
             

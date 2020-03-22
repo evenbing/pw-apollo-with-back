@@ -73,40 +73,45 @@ namespace PW.Services
             {
                 throw new PWException(SendSelfErrorMessage);
             }
-        }
-
-        public async Task<IOrderedEnumerable<TransactionDto>> GetTransactionsOrderedByDateAsync(string email)
-        {
-            var result = (await GetTransactionsAsync(email)).OrderByDescending(t => t.Date);
-            return result;
-        }
-
-        private async Task<IEnumerable<TransactionDto>> GetTransactionsAsync(string email)
-        {
-            var user = await _userRepository.GetWithTransactionsByEmailAsync(email);
-            var payeeDtos = user.PayeeTransactions.Select(t => {
-                var transactionDto = new TransactionDto
-                {
-                    Date = t.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
-                    CorrespondentName = t.Recipient.UserName,
-                    Amount = -t.Amount,
-                    ResultBalance = t.ResultingPayeeBalance
-                };
-                return transactionDto;
-            });
-            var recipientDtos = user.RecipientTransactions.Select(t => {
-                var transactionDto = new TransactionDto
-                {
-                    Date = t.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
-                    CorrespondentName = t.Payee.UserName,
-                    Amount = t.Amount,
-                    ResultBalance = t.ResultingRecipientBalance
-                };
-                return transactionDto;
-            });
-
-            var result = payeeDtos.Union(recipientDtos);
-            return result;
         }        
+
+        public async Task<IEnumerable<TransactionDto>> GetTransactionsByEmailAsync(string email, int offset, int limit)
+        {
+            var transactions = await _transactionRepository.GetByEmailAsync(email, offset, limit);
+            var result = new List<TransactionDto>();
+            foreach (var transaction in transactions)
+            {
+                if (transaction.Payee.Email == email)
+                {
+                    var transactionDto = new TransactionDto
+                    {
+                        Date = transaction.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
+                        CorrespondentName = transaction.Recipient.UserName,
+                        Amount = -transaction.Amount,
+                        ResultBalance = transaction.ResultingPayeeBalance
+                    };
+                    result.Add(transactionDto);
+                }
+                else
+                {
+                    var transactionDto = new TransactionDto
+                    {
+                        Date = transaction.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
+                        CorrespondentName = transaction.Payee.UserName,
+                        Amount = transaction.Amount,
+                        ResultBalance = transaction.ResultingRecipientBalance
+                    };
+                    result.Add(transactionDto);
+                }
+            }
+            
+            return result;
+        }
+
+        public async Task<int> GetTotalCountByEmailAsync(string email)
+        {
+            var result = await _transactionRepository.GetTotalCountByEmailAsync(email);
+            return result;
+        }
     }
 }

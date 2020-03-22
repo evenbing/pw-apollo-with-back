@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Table, Button, Icon } from 'semantic-ui-react'
+import { Table, Button, Icon, Pagination } from 'semantic-ui-react'
 import { useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-boost';
 
@@ -7,21 +7,42 @@ import { useHistory } from 'react-router';
 import { NavRoute } from '../MainRouter/MainRouter';
 import { ITransactionInfo } from '../../models/backendModels';
 import { toastResponseErrors } from '../../graphql/utils';
-import { GET_ALL_FOR_CURRENT_USER } from '../../graphql/gqlTransaction';
+import { GET_CURRENT_USER_TRANSACTIONS } from '../../graphql/gqlTransaction';
+
+const ITEMS_PER_PAGE = 10;
+const DEFAULT_PAGE = 1;
 
 export default function TransactionHistory() {
   const history = useHistory();    
   const [ transactions, setTransactions ] = useState(new Array<ITransactionInfo>());
+  const [ totalPages, setTotalPages ] = useState(0);
+  const [ currentPage, setCurrentPage ] = useState(DEFAULT_PAGE);
   
-  useQuery(GET_ALL_FOR_CURRENT_USER, {
+  useQuery(GET_CURRENT_USER_TRANSACTIONS, {
+    variables: {
+      offset: ((currentPage || DEFAULT_PAGE) - 1) * ITEMS_PER_PAGE,
+      limit: ITEMS_PER_PAGE
+    },
     fetchPolicy: 'cache-and-network',
-    onCompleted: ({transactionInfos}) => setTransactions(transactionInfos),
+    notifyOnNetworkStatusChange: true,
+    onCompleted: ({transactionInfos, totalCount}) => {
+      setTransactions(transactionInfos);
+      setTotalPages(Math.ceil(totalCount.count / ITEMS_PER_PAGE));
+    },
     onError: (error: ApolloError) => toastResponseErrors(error)
   });
 
   const handleCopyClick = (transaction: ITransactionInfo) => {
-    const absAmount = Math.abs(transaction.amount);    
+    const absAmount = Math.abs(transaction.amount);
     history.push(`${NavRoute.TransNew}?username=${transaction.correspondentName}&amount=${absAmount}`)
+  }
+
+  const handleChangePage = (newPage: string | number | undefined) => {
+    const pageNumber = Number(newPage);
+    if (isNaN(pageNumber)) {
+      return;
+    }
+    setCurrentPage(pageNumber);    
   }
 
   return (
@@ -35,11 +56,10 @@ export default function TransactionHistory() {
         <Table.HeaderCell />
       </Table.Row>
       </Table.Header>
-
       
       <Table.Body>
       {transactions.map((transaction: ITransactionInfo) => 
-        <Table.Row key={`${transaction.date}_${transaction.resultBalance}`}>
+        <Table.Row style={{minHeight: '61px'}} key={`${transaction.date}_${transaction.resultBalance}`}>
           <Table.Cell>{transaction.date}</Table.Cell>
           <Table.Cell>{transaction.correspondentName}</Table.Cell>
           <Table.Cell>{transaction.amount}</Table.Cell>
@@ -54,6 +74,18 @@ export default function TransactionHistory() {
         </Table.Row>)
       }
       </Table.Body>
+
+      <Table.Footer>
+        <Table.Row>
+          <Table.HeaderCell colSpan="8">
+            <Pagination
+              totalPages={totalPages}
+              activePage={currentPage}
+              onPageChange={(_, data) => handleChangePage(data.activePage)}
+            />
+          </Table.HeaderCell>
+        </Table.Row>
+      </Table.Footer>
     </Table>
   )
 }

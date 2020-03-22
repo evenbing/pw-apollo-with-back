@@ -11,6 +11,7 @@ namespace PW.Services.Interfaces
     public interface ITransactionService
     {
         Task CreateTransactionAsync(string payeeEmail, CreateTransactionDto createTransactionDto);
-        Task<IOrderedEnumerable<TransactionDto>> GetTransactionsOrderedByDateAsync(string email);        
+        Task<IEnumerable<TransactionDto>> GetTransactionsByEmailAsync(string email, int offset, int limit);
+        Task<int> GetTotalCountByEmailAsync(string email);
     }
 }

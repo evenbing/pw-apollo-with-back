@@ -1,8 +1,11 @@
 import gql from 'graphql-tag';
 
-export const GET_ALL_FOR_CURRENT_USER = gql`
-  query GetAllForCurrentUser {
-    transactionInfos {
+export const GET_CURRENT_USER_TRANSACTIONS = gql`
+  query GetCurrentUserTransactions($offset: Int!, $limit: Int!) {
+    totalCount {
+      count
+    }
+    transactionInfos(offset: $offset, limit: $limit) {
       date
       correspondentName
       amount

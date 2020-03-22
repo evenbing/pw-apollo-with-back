@@ -2,6 +2,7 @@
 using GraphQL.Types;
 using Microsoft.AspNetCore.Http;
 using PW.DataAccess.Interfaces;
+using PW.DataTransferObjects.Transactions;
 using PW.Services.Exceptions;
 using PW.Services.Interfaces;
 using PW.Web.GraphQL.Extensions;
@@ -62,16 +63,34 @@ namespace PW.Web.GraphQL
 
             FieldAsync<ListGraphType<TransactionType>>(
                 "transactionInfos",
+                arguments: new QueryArguments(new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "offset" },
+                    new QueryArgument<NonNullGraphType<IntGraphType>> { Name = "limit" }),
                 resolve: async context =>
                 {
                     if (!this.Authorize(httpContextAccessor, context))
                         return null;
 
+                    var offset = context.GetArgument<int>("offset");
+                    var limit = context.GetArgument<int>("limit");
+
                     var email = httpContextAccessor.HttpContext.User.Identity.Name;
-                    var transactions = await transactionService.GetTransactionsOrderedByDateAsync(email);
+                    var transactions = await transactionService.GetTransactionsByEmailAsync(email, offset, limit);                    
                     return transactions;
                 }
-            ); 
+            );
+
+            FieldAsync<TotalCountType>(
+                "totalCount",                
+                resolve: async context =>
+                {
+                    if (!this.Authorize(httpContextAccessor, context))
+                        return null;
+
+                    var email = httpContextAccessor.HttpContext.User.Identity.Name;                    
+                    var count = await transactionService.GetTotalCountByEmailAsync(email);
+                    return new TotalCountDto { Count = count };
+                }
+            );
 
             #endregion
         }
