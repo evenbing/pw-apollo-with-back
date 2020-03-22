@@ -48,14 +48,12 @@ namespace ParrotWingsReactBack
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<ITransactionService, TransactionService>();
 
+            // GraphQL
             services.AddScoped<IDependencyResolver>(s => new FuncDependencyResolver(s.GetRequiredService));
-            services.AddScoped<PwSchema>();
-                        
+            services.AddScoped<PwSchema>();                        
             services.AddGraphQL(o => { o.ExposeExceptions = false; })
                 .AddGraphTypes(ServiceLifetime.Scoped);
-
-            services.AddControllers();
-
+            
             // In production, the React files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
@@ -73,14 +71,10 @@ namespace ParrotWingsReactBack
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (!env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {                
                 app.UseHsts();
-            }
+            }            
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
@@ -93,10 +87,7 @@ namespace ParrotWingsReactBack
             app.UseGraphQL<PwSchema>();
 
             app.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller}/{action=Index}/{id?}");
+            {                
                 endpoints.MapHub<BalanceHub>("/balance");
             });
 
