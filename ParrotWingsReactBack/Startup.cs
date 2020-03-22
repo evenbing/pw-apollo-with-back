@@ -1,4 +1,3 @@
-using AutoMapper;
 using GraphQL;
 using GraphQL.Server;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -18,7 +17,6 @@ using PW.DataAccess.Repositories;
 using PW.Services;
 using PW.Services.Hubs;
 using PW.Services.Interfaces;
-using PW.Services.Mapping;
 using PW.Web.GraphQL;
 
 namespace ParrotWingsReactBack
@@ -40,8 +38,7 @@ namespace ParrotWingsReactBack
                 options.AllowSynchronousIO = true;
             });
             services.AddHttpContextAccessor();
-            services.AddAutoMapper(typeof(MappingProfile));
-
+            
             // Repositories
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<ITransactionRepository, TransactionRepository>();

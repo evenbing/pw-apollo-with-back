@@ -3,10 +3,9 @@ import { useQuery, useMutation } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-boost';
 import { HubConnection, HubConnectionBuilder } from '@microsoft/signalr'
 
-import { ApiContext } from '../ApiProvider/ApiProvider';
 import { ISessionInfo, ILoginOptions, ISignUpOptions } from '../../models/backendModels';
-import { toastResponseErrors } from '../../api/api';
-import { GET_SESSION_INFO, LOGIN, LOGOUT, SIGNUP } from '../../api/gqlSession';
+//import { toastResponseErrors } from '../../graphql/api';
+import { GET_SESSION_INFO, LOGIN, LOGOUT, SIGNUP } from '../../graphql/gqlSession';
 
 export interface ISessionContext {
   session: ISessionInfo | null;
@@ -24,8 +23,7 @@ export const SessionContext = React.createContext<ISessionContext>({
   logout: () => Promise.reject(),
 });
 
-export default function SessionProvider({ children }: { children?: ReactNode}) {
-  const api = useContext(ApiContext);
+export default function SessionProvider({ children }: { children?: ReactNode}) {  
   const [hubConnection, setHubConnection] = useState<HubConnection | null>(null);
   const [session, setSession] = useState<ISessionInfo | null>(null);
 

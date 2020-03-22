@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.AspNetCore.SignalR;
+﻿using Microsoft.AspNetCore.SignalR;
 using PW.DataAccess.Interfaces;
 using PW.DataTransferObjects.Transactions;
 using PW.Entities;
@@ -8,6 +7,7 @@ using PW.Services.Hubs;
 using PW.Services.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,18 +21,15 @@ namespace PW.Services
         private const string UserNotExistErrorMessage = "User with name \"{0}\" does not exist";
 
         private ITransactionRepository _transactionRepository;
-        private IUserRepository _userRepository;
-        private IMapper _mapper;
+        private IUserRepository _userRepository;        
         private IHubContext<BalanceHub, IBalanceHubClient> _balanceHubContext;
         
         public TransactionService(ITransactionRepository transactionRepository, 
-            IUserRepository userRepository, 
-            IMapper mapper,
+            IUserRepository userRepository,             
             IHubContext<BalanceHub, IBalanceHubClient> balanceHubContext)
         {
             _transactionRepository = transactionRepository;
-            _userRepository = userRepository;
-            _mapper = mapper;
+            _userRepository = userRepository;            
             _balanceHubContext = balanceHubContext;
         }
 
@@ -88,17 +85,23 @@ namespace PW.Services
         {
             var user = await _userRepository.GetWithTransactionsByEmailAsync(email);
             var payeeDtos = user.PayeeTransactions.Select(t => {
-                var transactionDto = _mapper.Map<TransactionDto>(t);
-                transactionDto.CorrespondentName = t.Recipient.UserName;
-                transactionDto.Amount = -t.Amount;
-                transactionDto.ResultBalance = t.ResultingPayeeBalance;
+                var transactionDto = new TransactionDto
+                {
+                    Date = t.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
+                    CorrespondentName = t.Recipient.UserName,
+                    Amount = -t.Amount,
+                    ResultBalance = t.ResultingPayeeBalance
+                };
                 return transactionDto;
             });
             var recipientDtos = user.RecipientTransactions.Select(t => {
-                var transactionDto = _mapper.Map<TransactionDto>(t);
-                transactionDto.CorrespondentName = t.Payee.UserName;
-                transactionDto.Amount = t.Amount;
-                transactionDto.ResultBalance = t.ResultingRecipientBalance;
+                var transactionDto = new TransactionDto
+                {
+                    Date = t.TransactionDateTime.ToString("u", new CultureInfo("en-US")),
+                    CorrespondentName = t.Payee.UserName,
+                    Amount = t.Amount,
+                    ResultBalance = t.ResultingRecipientBalance
+                };
                 return transactionDto;
             });
 

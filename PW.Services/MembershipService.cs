@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using PW.DataAccess.Interfaces;
 using PW.DataTransferObjects.Users;
 using PW.Entities;
@@ -23,14 +22,12 @@ namespace PW.Services
         private readonly IConfiguration _configuration;
         private readonly IUserRepository _userRepository;
         private readonly IEncryptionService _encryptionService;
-        private readonly IMapper _mapper;
-
-        public MembershipService(IConfiguration configuration, IUserRepository userRepository, IEncryptionService encryptionService, IMapper mapper)
+        
+        public MembershipService(IConfiguration configuration, IUserRepository userRepository, IEncryptionService encryptionService)
         {
             _configuration = configuration;
             _userRepository = userRepository;
-            _encryptionService = encryptionService;
-            _mapper = mapper;
+            _encryptionService = encryptionService;            
         }
 
         public ClaimsPrincipal GetUserClaimsPrincipal(PwUser user)

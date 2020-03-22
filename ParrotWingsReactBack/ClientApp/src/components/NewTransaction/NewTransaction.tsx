@@ -5,15 +5,13 @@ import { ApolloError } from 'apollo-boost';
 import { Form, Button, Dropdown, DropdownProps } from 'semantic-ui-react'
 import { toast } from 'react-toastify';
 
-import { ApiContext } from '../ApiProvider/ApiProvider';
 import { SessionContext } from '../SessionProvider/SessionProvider';
-import { toastResponseErrors } from '../../api/api';
-import { GET_USERNAME_OPTIONS } from '../../api/gqlUsers';
-import { NEW_TRANSACTION } from '../../api/gqlTransaction';
+//import { toastResponseErrors } from '../../graphql/api';
+import { GET_USERNAME_OPTIONS } from '../../graphql/gqlUsers';
+import { NEW_TRANSACTION } from '../../graphql/gqlTransaction';
 import { IUserNameOption } from '../../models/backendModels';
 
-export default function NewTransaction() {
-  const api = useContext(ApiContext);
+export default function NewTransaction() {  
   const {refreshSession} = useContext(SessionContext);
   const query = new URLSearchParams(useLocation().search);    
   const [recipient, setRecipient] = useState(query.get('username') !== null ? query.get('username')! : '');

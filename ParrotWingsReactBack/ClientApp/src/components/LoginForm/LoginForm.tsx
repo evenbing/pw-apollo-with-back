@@ -6,7 +6,7 @@ import { toast } from 'react-toastify';
 import styles from './LoginForm.module.css'
 import { SessionContext,  } from '../SessionProvider/SessionProvider';
 import { NavRoute } from '../MainRouter/MainRouter';
-import { toastResponseErrors } from '../../api/api';
+//import { toastResponseErrors } from '../../graphql/api';
 
 export default function LoginForm() {
   const history = useHistory();
@@ -22,7 +22,7 @@ export default function LoginForm() {
       await login({email, password});
       history.replace(from);
     } catch (ex) {
-      toastResponseErrors(ex.response?.data);
+      //toastResponseErrors(ex.response?.data);
     }
   }
 

@@ -3,18 +3,16 @@ import { Table, Button, Icon } from 'semantic-ui-react'
 import { useQuery } from '@apollo/react-hooks';
 import { ApolloError } from 'apollo-boost';
 
-import { ApiContext } from '../ApiProvider/ApiProvider'
 import { useHistory } from 'react-router';
 import { NavRoute } from '../MainRouter/MainRouter';
 import { ITransactionInfo } from '../../models/backendModels';
-import { toastResponseErrors } from '../../api/api';
-import { GET_ALL_FOR_CURRENT_USER } from '../../api/gqlTransaction';
+//import { toastResponseErrors } from '../../graphql/api';
+import { GET_ALL_FOR_CURRENT_USER } from '../../graphql/gqlTransaction';
 
 export default function TransactionHistory() {
   const history = useHistory();    
   const [ transactions, setTransactions ] = useState(new Array<ITransactionInfo>());
-  const api = useContext(ApiContext);
-
+  
   useQuery(GET_ALL_FOR_CURRENT_USER, {
     fetchPolicy: 'cache-and-network',
     onCompleted: ({transactionInfos}) => setTransactions(transactionInfos),
