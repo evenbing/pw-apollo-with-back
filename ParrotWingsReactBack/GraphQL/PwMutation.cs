@@ -12,6 +12,7 @@ using PW.Web.GraphQL.Extensions;
 using PW.Web.GraphQL.Types;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -20,8 +21,6 @@ namespace PW.Web.GraphQL
 {    
     public class PwMutation : ObjectGraphType
     {
-        private const string InvalidUserDataMessage = "Invalid user data";
-
         public PwMutation(IHttpContextAccessor httpContextAccessor, IMembershipService membershipService, ITransactionService transactionService)
         {
             #region Session
@@ -32,6 +31,9 @@ namespace PW.Web.GraphQL
                 resolve: async context =>
                 {
                     var loginDto = context.GetArgument<LoginDto>("loginOptions");
+
+                    if (!this.ValidateInput(context, loginDto))
+                        return null;
 
                     PwUser user = null;
                     ClaimsPrincipal claimsPrincipal = null;
@@ -58,10 +60,8 @@ namespace PW.Web.GraphQL
                 {
                     var signUpDto = context.GetArgument<SignUpDto>("signUpOptions");
 
-                    //if (!ModelState.IsValid)
-                    //{
-                    //    return BadRequest(InvalidUserDataMessage);
-                    //}
+                    if (!this.ValidateInput(context, signUpDto))
+                        return null;
 
                     PwUser user = null;
                     ClaimsPrincipal claimsPrincipal = null;
@@ -107,10 +107,9 @@ namespace PW.Web.GraphQL
                         return null;
 
                     var createTransactionDto = context.GetArgument<CreateTransactionDto>("newTransaction");
-                    //if (!ModelState.IsValid)
-                    //{
-                    //    return BadRequest(ModelState);
-                    //}
+
+                    if (!this.ValidateInput(context, createTransactionDto))
+                        return null;
 
                     var payeeEmail = httpContextAccessor.HttpContext.User.Identity.Name;
                     try
